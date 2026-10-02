@@ -3,11 +3,12 @@ import { z } from "zod";
 
 // gemini-2.5-flash is closed to new API keys. Free-tier quotas are per model, so we walk a chain
 // of current Flash models: if one is rate limited (429) or overloaded (503) the next one answers.
+// Flash Lite goes first: it is fast and has the most generous free-tier quota.
 const MODELS: { model: string; thinking: boolean }[] = [
+  { model: "gemini-3.5-flash-lite", thinking: true },
+  { model: "gemini-3.1-flash-lite", thinking: true },
   { model: "gemini-3.5-flash", thinking: false },
   { model: "gemini-3.8-flash", thinking: false },
-  { model: "gemini-3.5-flash-lite", thinking: true },
-  { model: "gemini-flash-latest", thinking: true },
 ];
 
 function client() {
