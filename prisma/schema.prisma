@@ -1,0 +1,146 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  username     String        @unique
+  bio          String?
+  interests    String        @default("")
+  points       Int           @default(0)
+  createdAt    DateTime      @default(now())
+  sessions     Session[]
+  posts        Post[]
+  requests     Request[]
+  memberships  RoomMember[]
+  messages     Message[]
+  ratingsGiven Rating[]      @relation("rater")
+  ratingsGot   Rating[]      @relation("ratee")
+  banters      Banter[]
+  banterReplies BanterReply[]
+  banterLikes  BanterLike[]
+}
+
+model Session {
+  token     String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Post {
+  id         String    @id @default(cuid())
+  authorId   String
+  content    String
+  title      String
+  type       String    @default("GROUP")
+  capacity   Int       @default(4)
+  scope      String    @default("CAMPUS")
+  place      String?
+  startsAt   String?
+  tags       String    @default("")
+  status     String    @default("ACTIVE")
+  holdReason String?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  author     User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  requests   Request[]
+  room       Room?
+}
+
+model Request {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model Room {
+  id        String       @id @default(cuid())
+  postId    String       @unique
+  closed    Boolean      @default(false)
+  closedAt  DateTime?
+  createdAt DateTime     @default(now())
+  post      Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
+  members   RoomMember[]
+  messages  Message[]
+  ratings   Rating[]
+}
+
+model RoomMember {
+  roomId String
+  userId String
+  room   Room   @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([roomId, userId])
+}
+
+model Message {
+  id         String   @id @default(cuid())
+  roomId     String
+  userId     String
+  body       String
+  flagged    Boolean  @default(false)
+  flagReason String?
+  createdAt  DateTime @default(now())
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  roomId    String
+  raterId   String
+  rateeId   String
+  score     Int
+  createdAt DateTime @default(now())
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  rater     User     @relation("rater", fields: [raterId], references: [id], onDelete: Cascade)
+  ratee     User     @relation("ratee", fields: [rateeId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, raterId, rateeId])
+}
+
+model Banter {
+  id        String        @id @default(cuid())
+  authorId  String
+  body      String
+  createdAt DateTime      @default(now())
+  author    User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replies   BanterReply[]
+  likes     BanterLike[]
+}
+
+model BanterReply {
+  id        String   @id @default(cuid())
+  banterId  String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+  banter    Banter   @relation(fields: [banterId], references: [id], onDelete: Cascade)
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model BanterLike {
+  banterId String
+  userId   String
+  banter   Banter @relation(fields: [banterId], references: [id], onDelete: Cascade)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([banterId, userId])
+}

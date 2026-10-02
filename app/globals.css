@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: oklch(0.975 0.004 290);
+  --foreground: oklch(0.18 0.02 290);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.48 0.18 295);
+  --primary-foreground: oklch(0.99 0 0);
+  --gold: oklch(0.8 0.15 85);
+  --muted: oklch(0.955 0.006 290);
+  --muted-foreground: oklch(0.52 0.02 290);
+  --border: oklch(0.91 0.008 290);
+  --destructive: oklch(0.58 0.22 25);
+  --amber: oklch(0.96 0.05 85);
+  --amber-foreground: oklch(0.45 0.11 65);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.14 0.01 290);
+    --foreground: oklch(0.96 0.005 290);
+    --card: oklch(0.19 0.014 290);
+    --primary: oklch(0.68 0.17 295);
+    --primary-foreground: oklch(0.99 0 0);
+    --gold: oklch(0.84 0.15 85);
+    --muted: oklch(0.24 0.016 290);
+    --muted-foreground: oklch(0.7 0.02 290);
+    --border: oklch(0.28 0.016 290);
+    --destructive: oklch(0.7 0.19 25);
+    --amber: oklch(0.3 0.06 75);
+    --amber-foreground: oklch(0.88 0.12 85);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-amber: var(--amber);
+  --color-gold: var(--gold);
+  --color-amber-foreground: var(--amber-foreground);
+  --font-sans: var(--font-inter);
+}
+
+* { border-color: var(--border); }
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  letter-spacing: -0.006em;
+}
+
+h1, h2 { letter-spacing: -0.02em; }
+
+html { font-size: 106.25%; }
+
+@theme {
+  --animate-fade-up: fade-up 0.35s ease-out both;
+  --animate-pop: pop 0.3s ease-out both;
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0; }
+    60% { transform: scale(1.06); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+}
