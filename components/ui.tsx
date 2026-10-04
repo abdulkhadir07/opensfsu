@@ -47,7 +47,11 @@ const GRADIENTS = [
   ["#8b5cf6", "#ec4899"],
 ];
 
-export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
+export function Avatar({ name, size = 36, src }: { name: string; size?: number; src?: string | null }) {
+  if (src) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={src} alt={name} width={size} height={size} className="shrink-0 rounded-full object-cover ring-2 ring-card" style={{ width: size, height: size }} />;
+  }
   const [a, b] = GRADIENTS[[...name].reduce((x, ch) => x + ch.charCodeAt(0), 0) % GRADIENTS.length];
   return (
     <span
@@ -55,6 +59,15 @@ export function Avatar({ name, size = 36 }: { name: string; size?: number }) {
       style={{ width: size, height: size, fontSize: size * 0.42, background: `linear-gradient(135deg, ${a}, ${b})` }}
     >
       {name.trim()[0]?.toUpperCase() ?? "?"}
+    </span>
+  );
+}
+
+export function RepBadge({ rep }: { rep?: { avg: number; count: number } | null }) {
+  if (!rep || !rep.count) return null;
+  return (
+    <span title={`${rep.avg} average from ${rep.count} rating${rep.count === 1 ? "" : "s"}`} className="rounded-md bg-gold/15 px-1.5 py-0.5 text-[10px] font-bold text-amber-foreground dark:text-gold">
+      ★{rep.avg.toFixed(1)}
     </span>
   );
 }

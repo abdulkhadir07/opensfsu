@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Plus, Inbox, MessageCircle, Star, Trophy, Megaphone } from "lucide-react";
+import { Home, Plus, Inbox, MessageCircle, Star, Trophy, Megaphone, UserRound, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const NAV = [
@@ -12,6 +12,8 @@ export const NAV = [
   { href: "/chats", label: "Chats", icon: MessageCircle },
   { href: "/ratings", label: "Ratings", icon: Star },
   { href: "/scoreboard", label: "Scoreboard", icon: Trophy },
+  { href: "/profile", label: "Profile", icon: UserRound },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function NavLinks({ compact }: { compact?: boolean }) {

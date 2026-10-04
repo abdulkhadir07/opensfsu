@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Star, StarOff, EyeOff } from "lucide-react";
 import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
@@ -38,9 +39,9 @@ export default async function Ratings({ searchParams }: PageProps<"/ratings">) {
           <div className="space-y-3">
             {due.map(({ room, ratee }) => (
               <Card key={room.id + ratee.id} className="animate-fade-up flex flex-wrap items-center gap-3 p-4">
-                <Avatar name={displayName(ratee)} />
+                <Link href={`/u/${ratee.username}`}><Avatar name={displayName(ratee)} src={ratee.avatarUrl} /></Link>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold">{displayName(ratee)}</div>
+                  <Link href={`/u/${ratee.username}`} className="text-sm font-semibold hover:underline">{displayName(ratee)}</Link>
                   <div className="truncate text-xs text-muted-foreground">{room.post.title}</div>
                 </div>
                 <StarPicker roomId={room.id} rateeId={ratee.id} />

@@ -3,7 +3,9 @@ import { db } from "@/lib/db";
 import { requireUser } from "@/lib/auth";
 import { withdrawRequest } from "@/lib/actions";
 import { displayName, isSfsu } from "@/lib/utils";
-import { Avatar, Button, Card, Empty, PageHeader, SfsuBadge, Tabs } from "@/components/ui";
+import Link from "next/link";
+import { reputation } from "@/lib/profile";
+import { Avatar, Button, Card, Empty, PageHeader, RepBadge, SfsuBadge, Tabs } from "@/components/ui";
 import { RespondButtons } from "@/components/respond-buttons";
 
 const STATUS: Record<string, string> = {
@@ -21,6 +23,7 @@ export default async function Requests({ searchParams }: PageProps<"/requests">)
     include: { user: true, post: { include: { author: true } } },
     orderBy: { createdAt: "desc" },
   });
+  const reps = await reputation(reqs.map((r) => (tab === "sent" ? r.post.authorId : r.userId)));
 
   return (
     <div>
@@ -35,9 +38,9 @@ export default async function Requests({ searchParams }: PageProps<"/requests">)
             const name = displayName(person);
             return (
               <Card key={r.id} className="animate-fade-up flex flex-wrap items-center gap-3 p-4">
-                <Avatar name={name} />
+                <Link href={`/u/${person.username}`}><Avatar name={name} src={person.avatarUrl} /></Link>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 text-sm font-semibold">{name} {isSfsu(person.email) && <SfsuBadge />}</div>
+                  <div className="flex items-center gap-1.5 text-sm font-semibold"><Link href={`/u/${person.username}`} className="hover:underline">{name}</Link> {isSfsu(person.email) && <SfsuBadge />}<RepBadge rep={reps[person.id]} /></div>
                   <div className="truncate text-xs text-muted-foreground">{tab === "sent" ? "You asked to join" : "wants to join"} {r.post.title}</div>
                 </div>
                 <span className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS[r.status]}`}>{r.status.toLowerCase()}</span>

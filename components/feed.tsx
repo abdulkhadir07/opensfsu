@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Check, Clock, Loader2, MapPin, Search, Sparkles, Users, Wind, X } from "lucide-react";
 import { requestJoin } from "@/lib/actions";
 import { cn } from "@/lib/utils";
-import { Avatar, Card, Empty, SfsuBadge } from "./ui";
+import { Avatar, Card, Empty, RepBadge, SfsuBadge } from "./ui";
 
 export type FeedPost = {
   id: string;
@@ -19,7 +19,7 @@ export type FeedPost = {
   tags: string[];
   timeLeft: string;
   urgent: boolean;
-  author: { name: string; username: string; sfsu: boolean };
+  author: { name: string; username: string; sfsu: boolean; avatarUrl: string | null; rep: { avg: number; count: number } | null };
   mine: boolean;
   myStatus: string | null;
   why: string | null;
@@ -89,9 +89,12 @@ function PostCard({ p, i, onTag }: { p: FeedPost; i: number; onTag: (t: string) 
   return (
     <Card className="animate-fade-up transition duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md" style={{ animationDelay: `${i * 50}ms` }}>
       <div className="mb-3 flex items-center gap-3">
-        <Avatar name={p.author.name} />
+        <Link href={`/u/${p.author.username}`} className="shrink-0"><Avatar name={p.author.name} src={p.author.avatarUrl} /></Link>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-sm font-semibold">{p.author.name} {p.author.sfsu && <SfsuBadge />}</div>
+          <div className="flex items-center gap-1.5 text-sm font-semibold">
+            <Link href={`/u/${p.author.username}`} className="hover:underline">{p.author.name}</Link>
+            {p.author.sfsu && <SfsuBadge />}<RepBadge rep={p.author.rep} />
+          </div>
           <div className="text-xs text-muted-foreground">@{p.author.username}</div>
         </div>
         <span className={cn("flex items-center gap-1 rounded-full px-2 py-1 text-xs", p.urgent ? "bg-primary/15 font-medium text-primary" : "bg-muted text-muted-foreground")}>

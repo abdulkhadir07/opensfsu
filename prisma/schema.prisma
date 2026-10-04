@@ -15,6 +15,7 @@ model User {
   lastName     String
   username     String        @unique
   bio          String?
+  avatarUrl    String?
   interests    String        @default("")
   points       Int           @default(0)
   createdAt    DateTime      @default(now())
@@ -31,9 +32,11 @@ model User {
 }
 
 model Session {
-  token     String   @id
+  token     String    @id
   userId    String
   expiresAt DateTime
+  userAgent String?
+  createdAt DateTime? @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

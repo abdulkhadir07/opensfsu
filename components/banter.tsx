@@ -11,15 +11,15 @@ export type BanterItem = {
   id: string;
   body: string;
   ago: string;
-  author: { name: string; username: string; sfsu: boolean };
+  author: { name: string; username: string; sfsu: boolean; avatarUrl: string | null };
   likes: number;
   liked: boolean;
-  replies: { id: string; body: string; ago: string; name: string; sfsu: boolean }[];
+  replies: { id: string; body: string; ago: string; name: string; sfsu: boolean; username: string; avatarUrl: string | null }[];
 };
 
 const PROMPTS = ["Best study spot on campus?", "Hot take:", "Overheard in the library...", "Who else is stressed about midterms?"];
 
-export function BanterBoard({ items, me, sort }: { items: BanterItem[]; me: string; sort: "new" | "hot" }) {
+export function BanterBoard({ items, me, meAvatar, sort }: { items: BanterItem[]; me: string; meAvatar: string | null; sort: "new" | "hot" }) {
   const [text, setText] = useState("");
   const [err, setErr] = useState<string>();
   const [pending, start] = useTransition();
@@ -36,7 +36,7 @@ export function BanterBoard({ items, me, sort }: { items: BanterItem[]; me: stri
     <div>
       <Card className="mb-5 border-2 border-primary/30 p-4">
         <div className="flex gap-3">
-          <Avatar name={me} />
+          <Avatar name={me} src={meAvatar} />
           <div className="flex-1">
             <textarea
               value={text}
@@ -101,10 +101,10 @@ function BanterCard({ b, i }: { b: BanterItem; i: number }) {
   return (
     <Card className="animate-fade-up p-4 transition hover:border-primary/40" style={{ animationDelay: `${Math.min(i, 8) * 40}ms` }}>
       <div className="flex gap-3">
-        <Avatar name={b.author.name} />
+        <Link href={`/u/${b.author.username}`} className="shrink-0"><Avatar name={b.author.name} src={b.author.avatarUrl} /></Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 text-sm">
-            <span className="font-semibold">{b.author.name}</span>
+            <Link href={`/u/${b.author.username}`} className="font-semibold hover:underline">{b.author.name}</Link>
             {b.author.sfsu && <SfsuBadge />}
             <span className="text-muted-foreground">· {b.ago}</span>
           </div>
@@ -125,9 +125,9 @@ function BanterCard({ b, i }: { b: BanterItem; i: number }) {
             <div className="animate-fade-up mt-3 space-y-2 border-l-2 border-primary/20 pl-3">
               {b.replies.map((r) => (
                 <div key={r.id} className="flex gap-2">
-                  <Avatar name={r.name} size={24} />
+                  <Link href={`/u/${r.username}`} className="shrink-0"><Avatar name={r.name} src={r.avatarUrl} size={24} /></Link>
                   <div className="min-w-0 rounded-xl bg-muted/60 px-3 py-1.5 text-sm">
-                    <span className="font-semibold">{r.name}</span> {r.sfsu && <SfsuBadge />} <span className="text-xs text-muted-foreground">{r.ago}</span>
+                    <Link href={`/u/${r.username}`} className="font-semibold hover:underline">{r.name}</Link> {r.sfsu && <SfsuBadge />} <span className="text-xs text-muted-foreground">{r.ago}</span>
                     <p className="break-words">{r.body}</p>
                   </div>
                 </div>

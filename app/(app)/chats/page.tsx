@@ -20,12 +20,13 @@ export default async function Chats() {
       ) : (
         <div className="space-y-3">
           {rooms.map((r) => {
-            const others = r.members.filter((m) => m.userId !== user.id).map((m) => displayName(m.user));
+            const otherUsers = r.members.filter((m) => m.userId !== user.id).map((m) => m.user);
+            const others = otherUsers.map((u) => displayName(u));
             const last = r.messages[0];
             return (
               <Link key={r.id} href={`/chats/${r.id}`} className="block">
                 <Card className="flex items-center gap-3 p-4 transition hover:border-primary/50">
-                  <Avatar name={others[0] ?? "?"} />
+                  <Avatar name={others[0] ?? "?"} src={otherUsers[0]?.avatarUrl} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{r.post.title}</div>
                     <div className="truncate text-xs text-muted-foreground">{others.join(", ")}{last ? ` · ${last.body}` : ""}</div>

@@ -34,7 +34,7 @@ export default async function Welcome() {
             <div className="space-y-2">
               {latest.map((p, i) => (
                 <div key={p.id} className="animate-fade-up flex items-center gap-3 rounded-2xl border bg-card p-3 transition hover:-translate-y-0.5 hover:shadow-md" style={{ animationDelay: `${160 + i * 80}ms` }}>
-                  <Avatar name={displayName(p.author)} size={32} />
+                  <Avatar name={displayName(p.author)} src={p.author.avatarUrl} size={32} />
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-semibold">{p.title}</div>
                     <div className="flex gap-3 truncate text-xs text-muted-foreground">

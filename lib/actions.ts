@@ -5,7 +5,7 @@ import { z } from "zod";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "./db";
-import { createSession, destroySession, requireUser } from "./auth";
+import { createSession, currentToken, destroySession, requireUser, sessionId } from "./auth";
 import { composePost, draftSchema, icebreaker, safetyCheck, smartReplies, type Draft } from "./ai";
 import { AI_MARK, splitTags } from "./utils";
 
@@ -238,4 +238,72 @@ export async function suggestBanterReplies(banterId: string, fresh = false): Pro
   if (!b) return [];
   const thread = [{ name: b.author.firstName, body: b.body }, ...b.replies.map((r) => ({ name: r.author.firstName, body: r.body }))];
   return smartReplies("a public campus banter thread (casual chat board)", thread, user.firstName, fresh);
+}
+
+// ---------- profile ----------
+
+export async function updateProfile(input: { firstName: string; lastName: string; bio: string; interests: string[] }): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const parsed = z
+    .object({
+      firstName: z.string().trim().min(1, "First name can't be empty").max(40),
+      lastName: z.string().trim().min(1, "Last name can't be empty").max(40),
+      bio: z.string().trim().max(200, "Keep your bio under 200 characters"),
+      interests: z.array(z.string().trim().toLowerCase().min(1).max(24)).max(12, "Up to 12 interests"),
+    })
+    .safeParse(input);
+  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  const { firstName, lastName, bio, interests } = parsed.data;
+  const check = await safetyCheck(`${firstName} ${lastName}\n${bio}\n${interests.join(", ")}`, "post");
+  if (!check.ok) return { error: `Safety Guardian blocked this: ${check.reason}` };
+  await db.user.update({
+    where: { id: user.id },
+    data: { firstName, lastName, bio: bio || null, interests: [...new Set(interests.map((i) => i.replace(/[#,]/g, "")))].filter(Boolean).join(",") },
+  });
+  revalidatePath("/", "layout");
+  return {};
+}
+
+export async function setAvatar(dataUrl: string | null): Promise<{ error?: string }> {
+  const user = await requireUser();
+  if (dataUrl !== null) {
+    if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(dataUrl)) return { error: "That file type isn't supported. Use JPEG, PNG or WebP." };
+    if (dataUrl.length > 400_000) return { error: "That photo is too big. Try a smaller one." };
+  }
+  await db.user.update({ where: { id: user.id }, data: { avatarUrl: dataUrl } });
+  revalidatePath("/", "layout");
+  return {};
+}
+
+// ---------- settings ----------
+
+export type PasswordState = { error?: string; ok?: boolean } | undefined;
+
+export async function changePassword(_: PasswordState, fd: FormData): Promise<PasswordState> {
+  const user = await requireUser();
+  const current = String(fd.get("current") ?? "");
+  const next = String(fd.get("next") ?? "");
+  const confirm = String(fd.get("confirm") ?? "");
+  if (!(await bcrypt.compare(current, user.passwordHash))) return { error: "Your current password isn't right" };
+  if (next.length < 8) return { error: "New password needs at least 8 characters" };
+  if (next !== confirm) return { error: "The new passwords don't match" };
+  if (next === current) return { error: "Pick a password you haven't used here" };
+  await db.user.update({ where: { id: user.id }, data: { passwordHash: await bcrypt.hash(next, 10) } });
+  return { ok: true };
+}
+
+export async function revokeSession(id: string) {
+  const user = await requireUser();
+  const mine = await currentToken();
+  const sessions = await db.session.findMany({ where: { userId: user.id }, select: { token: true } });
+  const target = sessions.find((s) => sessionId(s.token) === id && s.token !== mine);
+  if (target) await db.session.delete({ where: { token: target.token } });
+  revalidatePath("/settings/sessions");
+}
+
+export async function signOutOthers() {
+  const user = await requireUser();
+  const mine = await currentToken();
+  await db.session.deleteMany({ where: { userId: user.id, NOT: { token: mine ?? "" } } });
+  revalidatePath("/settings/sessions");
 }

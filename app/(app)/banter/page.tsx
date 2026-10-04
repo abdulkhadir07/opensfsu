@@ -16,17 +16,17 @@ export default async function BanterPage({ searchParams }: PageProps<"/banter">)
     id: b.id,
     body: b.body,
     ago: ago(b.createdAt),
-    author: { name: displayName(b.author), username: b.author.username, sfsu: isSfsu(b.author.email) },
+    author: { name: displayName(b.author), username: b.author.username, sfsu: isSfsu(b.author.email), avatarUrl: b.author.avatarUrl },
     likes: b.likes.length,
     liked: b.likes.some((l) => l.userId === user.id),
-    replies: b.replies.map((r) => ({ id: r.id, body: r.body, ago: ago(r.createdAt), name: displayName(r.author), sfsu: isSfsu(r.author.email) })),
+    replies: b.replies.map((r) => ({ id: r.id, body: r.body, ago: ago(r.createdAt), name: displayName(r.author), sfsu: isSfsu(r.author.email), username: r.author.username, avatarUrl: r.author.avatarUrl })),
   }));
   if (sort === "hot") items.sort((a, b) => b.likes + b.replies.length * 2 - (a.likes + a.replies.length * 2));
 
   return (
     <div>
       <PageHeader title="Banter" sub="Say whatever's on your mind. Hot takes, class rants, random thoughts. All fair game." />
-      <BanterBoard items={items} me={displayName(user)} sort={sort} />
+      <BanterBoard items={items} me={displayName(user)} meAvatar={user.avatarUrl} sort={sort} />
     </div>
   );
 }

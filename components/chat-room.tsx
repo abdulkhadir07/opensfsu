@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import { SendHorizontal, Lock, Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { askIcebreaker, sendMessage, suggestChatReplies } from "@/lib/actions";
 import { cn } from "@/lib/utils";
@@ -8,7 +9,7 @@ import { Avatar, Button, Input } from "./ui";
 
 type Msg = { id: string; body: string; userId: string; name: string; at: string; ai: boolean };
 
-export function ChatRoom({ roomId, me, closed: initialClosed }: { roomId: string; me: string; closed: boolean }) {
+export function ChatRoom({ roomId, me, closed: initialClosed, people }: { roomId: string; me: string; closed: boolean; people: Record<string, { avatarUrl: string | null; username: string }> }) {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [closed, setClosed] = useState(initialClosed);
   const [text, setText] = useState("");
@@ -91,7 +92,7 @@ export function ChatRoom({ roomId, me, closed: initialClosed }: { roomId: string
           const mine = m.userId === me;
           return (
             <div key={m.id} className={cn("animate-fade-up flex items-end gap-2", mine && "flex-row-reverse")}>
-              {!mine && <Avatar name={m.name} size={28} />}
+              {!mine && <Link href={`/u/${people[m.userId]?.username ?? ""}`} className="shrink-0"><Avatar name={m.name} src={people[m.userId]?.avatarUrl} size={28} /></Link>}
               <div className={cn("max-w-[75%] rounded-2xl px-3.5 py-2 text-sm", mine ? "rounded-br-sm bg-primary text-primary-foreground" : "rounded-bl-sm border bg-card")}>
                 {!mine && <div className="mb-0.5 text-xs font-semibold opacity-70">{m.name.split(" ")[0]}</div>}
                 {m.body}
